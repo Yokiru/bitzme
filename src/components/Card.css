@@ -1,0 +1,165 @@
+.card-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(209, 207, 192, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 600px;
+    min-height: 400px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.card-container.feedback-mode {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.card-title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+}
+
+.card-content {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.feedback-mode .card-content {
+    text-align: center;
+}
+
+.card-feedback-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.action-btn {
+    padding: 0.8rem 2rem;
+    border-radius: 9999px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    font-weight: 500;
+}
+
+.action-btn.yes {
+    background-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.action-btn.yes:hover {
+    background-color: rgba(247, 111, 83, 0.9);
+    transform: translateY(-2px);
+}
+
+.action-btn.no {
+    background-color: transparent;
+    border: 1px solid var(--text-primary);
+    color: var(--text-primary);
+}
+
+.action-btn.no:hover {
+    background-color: rgba(209, 207, 192, 0.1);
+}
+
+.confusion-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-wrapper {
+    width: 100%;
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.confusion-input {
+    width: 100%;
+    min-height: 100px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(209, 207, 192, 0.3);
+    border-radius: 16px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    resize: none;
+    outline: none;
+}
+
+.confusion-input:focus {
+    border-color: var(--accent);
+}
+
+.send-btn {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-primary);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.send-btn:hover {
+    transform: scale(1.1);
+}
+
+.back-text-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    opacity: 0.6;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.back-text-btn:hover {
+    opacity: 1;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .card-container {
+        padding: 1.5rem;
+        border-radius: 20px;
+        min-height: auto;
+    }
+
+    .card-title {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-content {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+}
