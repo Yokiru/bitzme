@@ -6,6 +6,7 @@ import Card from '../components/Card';
 import FeedbackCard from '../components/FeedbackCard';
 import QuizCard from '../components/QuizCard';
 import { generateExplanation, generateClarification, generateQuizQuestions } from '../services/gemini';
+import { supabase } from '../services/supabase';
 import './Result.css';
 
 const Result = () => {
@@ -30,13 +31,17 @@ const Result = () => {
             setError(null);
 
             try {
-                // 1. Check history first
-                const history = JSON.parse(localStorage.getItem('learn_history') || '[]');
-                const cachedItem = history.find(item => item.query === query);
+                // 1. Check Supabase history first
+                const { data: cachedData, error: dbError } = await supabase
+                    .from('history')
+                    .select('*')
+                    .eq('query', query)
+                    .limit(1)
+                    .maybeSingle();
 
-                if (cachedItem && cachedItem.content) {
-                    // Use cached content
-                    setCards(cachedItem.content);
+                if (cachedData && cachedData.content) {
+                    console.log("Loaded from cache:", query);
+                    setCards(cachedData.content);
                     setLoading(false);
                     return;
                 }
@@ -45,8 +50,8 @@ const Result = () => {
                 const explanationCards = await generateExplanation(query);
                 setCards(explanationCards);
 
-                // 3. Save to history
-                saveToHistory(query, explanationCards);
+                // 3. Save to Supabase
+                await saveToHistory(query, explanationCards);
 
             } catch (err) {
                 console.error("Failed to fetch explanation", err);
@@ -75,24 +80,33 @@ const Result = () => {
         fetchQuiz();
     }, [cards, quizMode, query, quizQuestions.length]);
 
-    const saveToHistory = (query, content) => {
+    const saveToHistory = async (query, content) => {
         try {
-            const history = JSON.parse(localStorage.getItem('learn_history') || '[]');
+            // Check if already exists
+            const { data: existing } = await supabase
+                .from('history')
+                .select('id')
+                .eq('query', query)
+                .limit(1)
+                .maybeSingle();
 
-            // Remove existing entry for this query to move it to top
-            const filteredHistory = history.filter(item => item.query !== query);
+            if (existing) {
+                // Update timestamp to move to top
+                await supabase
+                    .from('history')
+                    .update({ created_at: new Date().toISOString(), content: content })
+                    .eq('id', existing.id);
+            } else {
+                // Insert new
+                const { error } = await supabase
+                    .from('history')
+                    .insert([
+                        { query, content }
+                    ]);
+                if (error) throw error;
+            }
 
-            // Create new entry
-            const newEntry = {
-                query,
-                content,
-                timestamp: new Date().toISOString()
-            };
-
-            // Add to top and limit to 10
-            const newHistory = [newEntry, ...filteredHistory].slice(0, 10);
-
-            localStorage.setItem('learn_history', JSON.stringify(newHistory));
+            // Trigger update in Sidebar
             window.dispatchEvent(new Event('historyUpdated'));
         } catch (e) {
             console.error("Failed to save history", e);

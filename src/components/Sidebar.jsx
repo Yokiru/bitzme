@@ -3,35 +3,103 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Clock, Trash2 } from 'lucide-react';
 import './Sidebar.css';
+import { supabase } from '../services/supabase';
 
 const Sidebar = ({ isOpen, toggle }) => {
     const [history, setHistory] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const loadHistory = () => {
+        const loadHistory = async () => {
             try {
-                const saved = JSON.parse(localStorage.getItem('learn_history') || '[]');
-                // Filter out invalid entries (legacy strings or malformed objects)
-                const validHistory = saved.filter(item => typeof item === 'object' && item !== null && item.query);
-                setHistory(validHistory);
+                const { data, error } = await supabase
+                    .from('history')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                setHistory(data || []);
             } catch (e) {
                 console.error("Failed to load history", e);
-                setHistory([]);
             }
         };
 
-        loadHistory();
+        const migrateHistory = async () => {
+            const localHistory = localStorage.getItem('learn_history');
+            const isMigrated = localStorage.getItem('supabase_migrated');
+
+            if (localHistory && !isMigrated) {
+                try {
+                    const parsed = JSON.parse(localHistory);
+                    // Filter valid items
+                    const validItems = parsed.filter(item => item.query && item.content);
+
+                    if (validItems.length > 0) {
+                        // Prepare data for insertion
+                        const itemsToInsert = validItems.map(item => ({
+                            query: item.query,
+                            content: item.content,
+                            // Use current time if timestamp is missing or invalid
+                            created_at: item.timestamp || new Date().toISOString()
+                        }));
+
+                        const { error } = await supabase
+                            .from('history')
+                            .insert(itemsToInsert);
+
+                        if (!error) {
+                            console.log("Migration successful");
+                            localStorage.setItem('supabase_migrated', 'true');
+                            loadHistory(); // Reload after migration
+                        } else {
+                            console.error("Migration failed", error);
+                        }
+                    } else {
+                        // No valid items to migrate, mark as done
+                        localStorage.setItem('supabase_migrated', 'true');
+                    }
+                } catch (e) {
+                    console.error("Migration error", e);
+                }
+            } else {
+                loadHistory();
+            }
+        };
+
+        migrateHistory();
+
+        // Subscribe to realtime changes
+        const channel = supabase
+            .channel('history_changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'history' }, () => {
+                loadHistory();
+            })
+            .subscribe();
+
+        // Also listen for custom local event as fallback/immediate update
         window.addEventListener('historyUpdated', loadHistory);
-        return () => window.removeEventListener('historyUpdated', loadHistory);
+
+        return () => {
+            supabase.removeChannel(channel);
+            window.removeEventListener('historyUpdated', loadHistory);
+        };
     }, []);
 
-    const handleDelete = (e, itemToDelete) => {
-        e.stopPropagation(); // Prevent navigation when clicking delete
-        const updatedHistory = history.filter(item => item.query !== itemToDelete.query);
-        localStorage.setItem('learn_history', JSON.stringify(updatedHistory));
-        setHistory(updatedHistory);
-        window.dispatchEvent(new Event('historyUpdated'));
+    const handleDelete = async (e, itemToDelete) => {
+        e.stopPropagation();
+        try {
+            const { error } = await supabase
+                .from('history')
+                .delete()
+                .eq('id', itemToDelete.id);
+
+            if (error) throw error;
+
+            // Optimistic update
+            setHistory(prev => prev.filter(item => item.id !== itemToDelete.id));
+        } catch (e) {
+            console.error("Failed to delete history item", e);
+        }
     };
 
     const handleHistoryClick = (query) => {
