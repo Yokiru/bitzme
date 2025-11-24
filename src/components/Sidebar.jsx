@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Clock, Trash2 } from 'lucide-react';
+import { Menu, X, Clock, Trash2, ArrowLeftToLine, Workflow, FileQuestion } from 'lucide-react';
 import './Sidebar.css';
 import { supabase } from '../services/supabase';
 
@@ -122,24 +122,44 @@ const Sidebar = ({ isOpen, toggle }) => {
                 )}
             </AnimatePresence>
 
-            <button
-                onClick={toggle}
-                className={`sidebar-toggle-btn ${isOpen ? 'open' : ''}`}
-                aria-label="Toggle Menu"
-            >
-                {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-
             <motion.div
                 initial={{ x: "-100%" }}
                 animate={{ x: isOpen ? 0 : "-100%" }}
                 transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
                 className="sidebar-container"
             >
-
+                <div className="sidebar-header">
+                    <button
+                        onClick={toggle}
+                        className="sidebar-toggle-btn open"
+                        aria-label="Close Sidebar"
+                    >
+                        <ArrowLeftToLine size={24} />
+                    </button>
+                    <span className="sidebar-app-name">Bitzme</span>
+                </div>
 
                 <div className="sidebar-content">
-                    <div className="sidebar-section-title">Recent</div>
+                    <div className="sidebar-menu">
+                        <div className="sidebar-menu-item coming-soon">
+                            <div className="menu-icon">
+                                <Workflow size={16} />
+                            </div>
+                            <span className="menu-text">Mindmap</span>
+                            <span className="badge">Soon</span>
+                        </div>
+                        <div className="sidebar-menu-item coming-soon">
+                            <div className="menu-icon">
+                                <FileQuestion size={16} />
+                            </div>
+                            <span className="menu-text">Quizzes</span>
+                            <span className="badge">Soon</span>
+                        </div>
+                    </div>
+
+                    <div className="sidebar-divider"></div>
+
+                    <div className="sidebar-section-title">Recents</div>
                     {history.length === 0 ? (
                         <p className="empty-history">No recent chats</p>
                     ) : (
@@ -172,6 +192,16 @@ const Sidebar = ({ isOpen, toggle }) => {
                     )}
                 </div>
             </motion.div>
+
+            {!isOpen && (
+                <button
+                    onClick={toggle}
+                    className="sidebar-toggle-btn closed"
+                    aria-label="Open Sidebar"
+                >
+                    <Menu size={24} />
+                </button>
+            )}
         </>
     );
 };
