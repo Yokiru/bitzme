@@ -135,9 +135,7 @@ const Sidebar = ({ isOpen, toggle }) => {
                 transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
                 className="sidebar-container"
             >
-                <div className="sidebar-header">
-                    <h2>Bitzme</h2>
-                </div>
+
 
                 <div className="sidebar-content">
                     <div className="sidebar-section-title">Recent</div>
