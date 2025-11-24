@@ -134,7 +134,7 @@ const Sidebar = ({ isOpen, toggle }) => {
                         className="sidebar-toggle-btn open"
                         aria-label="Close Sidebar"
                     >
-                        <ArrowLeftToLine size={24} />
+                        <ArrowLeftToLine size={24} strokeWidth={1.5} />
                     </button>
                     <span className="sidebar-app-name">Nue</span>
                 </div>
@@ -199,7 +199,7 @@ const Sidebar = ({ isOpen, toggle }) => {
                     className="sidebar-toggle-btn closed"
                     aria-label="Open Sidebar"
                 >
-                    <Menu size={24} />
+                    <Menu size={24} strokeWidth={1.5} />
                 </button>
             )}
         </>
