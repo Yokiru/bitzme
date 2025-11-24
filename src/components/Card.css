@@ -116,19 +116,19 @@
     right: 1rem;
     background: var(--accent);
     border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
+    border-radius: 8px;
+    padding: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--bg-primary);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.3s ease;
 }
 
 .send-btn:hover {
-    transform: scale(1.1);
+    background-color: rgba(247, 111, 83, 0.8);
+    transform: translateY(-1px);
 }
 
 .back-text-btn {

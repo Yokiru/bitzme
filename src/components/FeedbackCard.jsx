@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 import './Card.css'; // Reuse card styles
 
-const FeedbackCard = ({ onYes, onSubmitConfusion }) => {
+const FeedbackCard = ({ onSubmit }) => {
     const [showInput, setShowInput] = useState(false);
     const [confusion, setConfusion] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (confusion.trim()) {
-            onSubmitConfusion(confusion);
+            onSubmit('confused', confusion);
             setConfusion("");
             setShowInput(false);
         }
@@ -30,7 +30,7 @@ const FeedbackCard = ({ onYes, onSubmitConfusion }) => {
                 <>
                     <p className="card-content">Did you understand everything clearly?</p>
                     <div className="card-feedback-actions">
-                        <button onClick={onYes} className="action-btn yes">
+                        <button onClick={() => onSubmit('understood')} className="action-btn yes">
                             Yes, I got it!
                         </button>
                         <button onClick={() => setShowInput(true)} className="action-btn no">
@@ -50,7 +50,7 @@ const FeedbackCard = ({ onYes, onSubmitConfusion }) => {
                             autoFocus
                         />
                         <button type="submit" className="send-btn">
-                            <Send size={20} />
+                            <ArrowUp size={20} />
                         </button>
                     </div>
                     <button
