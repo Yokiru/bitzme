@@ -88,24 +88,37 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
+            console.log('Login attempt started');
             setLoading(true);
             const { user, session, error } = await authService.signIn(email, password);
 
             if (error) {
+                console.error('Sign in error:', error);
                 throw error;
             }
 
+            console.log('Sign in successful, user:', user);
             setUser(user);
             setSession(session);
 
             if (user) {
-                await loadUserProfile(user.id);
+                console.log('Loading user profile...');
+                try {
+                    await loadUserProfile(user.id);
+                    console.log('Profile loaded successfully');
+                } catch (profileError) {
+                    console.error('Profile load error (non-fatal):', profileError);
+                    // Continue even if profile fails to load
+                }
             }
 
+            console.log('Login completed successfully');
             return { success: true, error: null };
         } catch (error) {
+            console.error('Login failed:', error);
             return { success: false, error };
         } finally {
+            console.log('Setting loading to false');
             setLoading(false);
         }
     };
