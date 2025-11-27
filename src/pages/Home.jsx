@@ -3,41 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUp, Brain } from 'lucide-react';
 import './Home.css';
+import { useLanguage } from '../contexts/LanguageContext';
 
-const GREETINGS = [
-    "Hi, ready to learn something new?",
-    "Hello, what's on your mind today?",
-    "Greetings, let's make it simple.",
-    "Hey there, curious mind!",
-    "Welcome, what shall we explore?"
-];
 
-const DEFAULT_SUGGESTIONS = [
-    "Explain Quantum Physics",
-    "How does photosynthesis work?",
-    "What is the theory of relativity?",
-    "Explain blockchain like I'm 5",
-    "History of the Roman Empire",
-    "How do airplanes fly?",
-    "What is Artificial Intelligence?",
-    "The water cycle explained"
-];
 
-// Static map for smart suggestions
-const TOPIC_MAP = {
-    "physics": ["Newton's Laws", "Gravity", "Thermodynamics", "Speed of Light"],
-    "quantum": ["Schrödinger's Cat", "Entanglement", "Wave-Particle Duality"],
-    "biology": ["Cell Structure", "DNA vs RNA", "Evolution", "Ecosystems"],
-    "plant": ["Photosynthesis", "Plant Cells", "Pollination"],
-    "history": ["World War II", "Ancient Egypt", "The Industrial Revolution", "The Cold War"],
-    "tech": ["How the Internet works", "Coding for beginners", "Cybersecurity"],
-    "ai": ["Machine Learning", "Neural Networks", "Robotics"],
-    "space": ["Black Holes", "The Solar System", "Mars Colonization", "Big Bang Theory"],
-    "money": ["Inflation", "Stock Market", "Cryptocurrency", "Supply and Demand"],
-    "art": ["Renaissance", "Impressionism", "Color Theory", "Famous Painters"]
-};
+
 
 const Home = ({ isSidebarOpen }) => {
+    const { t, language } = useLanguage();
     const [greeting, setGreeting] = useState("");
     const [query, setQuery] = useState("");
     const [suggestions, setSuggestions] = useState([]);
@@ -45,7 +18,10 @@ const Home = ({ isSidebarOpen }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const randomGreeting = GREETINGS[Math.floor(Math.random() * GREETINGS.length)];
+        const greetings = t('home.greetings');
+        // Ensure greetings is an array before accessing
+        const greetingList = Array.isArray(greetings) ? greetings : [greetings];
+        const randomGreeting = greetingList[Math.floor(Math.random() * greetingList.length)];
         setGreeting(randomGreeting);
 
         // Generate smart suggestions
@@ -57,29 +33,40 @@ const Home = ({ isSidebarOpen }) => {
             setSuggestions(smartSuggestions);
         } catch (e) {
             console.error("Failed to load history for suggestions", e);
-            setSuggestions(DEFAULT_SUGGESTIONS.slice(0, 5));
+            const defaultSuggestions = t('home.suggestions');
+            const suggestionsList = Array.isArray(defaultSuggestions) ? defaultSuggestions : [];
+            setSuggestions(suggestionsList.slice(0, 5));
         }
-    }, []);
+    }, [language, t]); // Re-run when language changes
 
     const getSmartSuggestions = (history) => {
         let newSuggestions = new Set();
 
         // 1. Try to find related topics based on history
-        history.forEach(item => {
-            const lowerItem = item.toLowerCase();
-            Object.keys(TOPIC_MAP).forEach(key => {
-                if (lowerItem.includes(key)) {
-                    TOPIC_MAP[key].forEach(topic => newSuggestions.add(topic));
-                }
+        const topicMap = t('home.topic_map');
+        // Ensure topicMap is an object
+        if (topicMap && typeof topicMap === 'object') {
+            history.forEach(item => {
+                const lowerItem = item.toLowerCase();
+                Object.keys(topicMap).forEach(key => {
+                    if (lowerItem.includes(key)) {
+                        const topics = topicMap[key];
+                        if (Array.isArray(topics)) {
+                            topics.forEach(topic => newSuggestions.add(topic));
+                        }
+                    }
+                });
             });
-        });
+        }
 
         // 2. Convert to array
         let suggestionArray = Array.from(newSuggestions);
 
         // 3. Fill with defaults if we don't have enough (target 5)
         if (suggestionArray.length < 5) {
-            const shuffledDefaults = [...DEFAULT_SUGGESTIONS].sort(() => 0.5 - Math.random());
+            const defaultSuggestions = t('home.suggestions');
+            const suggestionsList = Array.isArray(defaultSuggestions) ? defaultSuggestions : [];
+            const shuffledDefaults = [...suggestionsList].sort(() => 0.5 - Math.random());
             for (let item of shuffledDefaults) {
                 if (!suggestionArray.includes(item)) {
                     suggestionArray.push(item);
@@ -142,7 +129,7 @@ const Home = ({ isSidebarOpen }) => {
                                 handleSearch(e);
                             }
                         }}
-                        placeholder="Ask anything..."
+                        placeholder={t('home.placeholder')}
                         className="search-input"
                         rows="1"
                     />
@@ -151,11 +138,11 @@ const Home = ({ isSidebarOpen }) => {
                             type="button"
                             onClick={() => setQuizMode(!quizMode)}
                             className={`quiz-icon-btn ${quizMode ? 'active' : ''}`}
-                            aria-label="Toggle Quiz Mode"
-                            title="Quiz Mode"
+                            aria-label={t('home.quiz_mode')}
+                            title={t('home.quiz_mode')}
                         >
                             <Brain size={20} />
-                            {quizMode && <span className="quiz-mode-text">Quiz Mode</span>}
+                            {quizMode && <span className="quiz-mode-text">{t('home.quiz_mode')}</span>}
                         </button>
                         <button
                             type="submit"

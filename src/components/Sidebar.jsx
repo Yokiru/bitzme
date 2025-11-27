@@ -4,10 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Clock, Trash2, ArrowLeftToLine, Workflow, FileQuestion } from 'lucide-react';
 import './Sidebar.css';
 import { supabase } from '../services/supabase';
+import ProfileSection from './ProfileSection';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Sidebar = ({ isOpen, toggle }) => {
     const [history, setHistory] = useState([]);
     const navigate = useNavigate();
+    const { t } = useLanguage();
 
     useEffect(() => {
         const loadHistory = async () => {
@@ -129,14 +132,17 @@ const Sidebar = ({ isOpen, toggle }) => {
                 className="sidebar-container"
             >
                 <div className="sidebar-header">
+                    <div className="sidebar-brand">
+                        <img src="/logo-nue.png" alt="Nue" className="sidebar-logo" />
+                        <span className="sidebar-app-name">Nue</span>
+                    </div>
                     <button
                         onClick={toggle}
                         className="sidebar-toggle-btn open"
                         aria-label="Close Sidebar"
                     >
-                        <ArrowLeftToLine size={24} strokeWidth={1.5} />
+                        <ArrowLeftToLine size={20} strokeWidth={1.5} />
                     </button>
-                    <span className="sidebar-app-name">Nue</span>
                 </div>
 
                 <div className="sidebar-content">
@@ -145,23 +151,23 @@ const Sidebar = ({ isOpen, toggle }) => {
                             <div className="menu-icon">
                                 <Workflow size={16} />
                             </div>
-                            <span className="menu-text">Mindmap</span>
-                            <span className="badge">Soon</span>
+                            <span className="menu-text">{t('nav.mindmap')}</span>
+                            <span className="badge">{t('nav.soon')}</span>
                         </div>
                         <div className="sidebar-menu-item coming-soon">
                             <div className="menu-icon">
                                 <FileQuestion size={16} />
                             </div>
-                            <span className="menu-text">Quizzes</span>
-                            <span className="badge">Soon</span>
+                            <span className="menu-text">{t('nav.quizzes')}</span>
+                            <span className="badge">{t('nav.soon')}</span>
                         </div>
                     </div>
 
                     <div className="sidebar-divider"></div>
 
-                    <div className="sidebar-section-title">Recents</div>
+                    <div className="sidebar-section-title">{t('nav.recents')}</div>
                     {history.length === 0 ? (
-                        <p className="empty-history">No recent chats</p>
+                        <p className="empty-history">{t('nav.no_chats')}</p>
                     ) : (
                         <ul className="history-list">
                             {history.map((item, index) => (
@@ -191,6 +197,9 @@ const Sidebar = ({ isOpen, toggle }) => {
                         </ul>
                     )}
                 </div>
+
+                {/* Profile Section at Bottom */}
+                <ProfileSection />
             </motion.div>
 
             {!isOpen && (
