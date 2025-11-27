@@ -125,6 +125,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
+            console.log('Logout started');
             setLoading(true);
             const { error } = await authService.signOut();
 
@@ -133,16 +134,19 @@ export const AuthProvider = ({ children }) => {
                 // Continue to clear local state anyway
             }
 
+            console.log('Logout completed, clearing state');
             return { success: true, error: null };
         } catch (error) {
             console.error("Logout exception:", error);
             return { success: false, error };
         } finally {
             // Always clear local state
+            console.log('Clearing user state');
             setUser(null);
             setProfile(null);
             setSession(null);
             setLoading(false);
+            console.log('Logout finished');
         }
     };
 
