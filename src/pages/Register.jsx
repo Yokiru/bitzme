@@ -107,7 +107,18 @@ const Register = () => {
         if (success) {
             setRegistrationSuccess(true);
         } else {
-            setError(registerError?.message || 'Failed to create account. Please try again.');
+            // Check for specific error types
+            const errorMessage = registerError?.message || '';
+
+            if (errorMessage.includes('already registered') || errorMessage.includes('User already exists')) {
+                setError('This email is already registered. Please sign in or use a different email.');
+            } else if (errorMessage.includes('Invalid email')) {
+                setError('Please enter a valid email address.');
+            } else if (errorMessage.includes('Password')) {
+                setError('Password must be at least 8 characters long.');
+            } else {
+                setError(errorMessage || 'Failed to create account. Please try again.');
+            }
         }
     };
 
