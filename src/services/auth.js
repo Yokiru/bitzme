@@ -113,7 +113,18 @@ export const authService = {
     async getCurrentUser() {
         try {
             console.log('🕵️ authService: getCurrentUser calling getUser()');
-            const { data: { user }, error } = await supabase.auth.getUser();
+
+            // Create a timeout promise
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+            );
+
+            // Race getUser against timeout
+            const { data: { user }, error } = await Promise.race([
+                supabase.auth.getUser(),
+                timeoutPromise
+            ]);
+
             console.log('🕵️ authService: getUser() result', { hasUser: !!user, error });
 
             if (error) throw error;
@@ -125,13 +136,19 @@ export const authService = {
             return { user, session, error: null };
         } catch (error) {
             console.error('🕵️ authService: getCurrentUser error', error);
-            return { user: null, session: null, error };
+
+            // Fallback: try getSession if getUser fails/times out
+            try {
+                console.log('🕵️ authService: Fallback to getSession');
+                const { data: { session } } = await supabase.auth.getSession();
+                return { user: session?.user || null, session, error: null };
+            } catch (sessionError) {
+                return { user: null, session: null, error };
+            }
         }
     },
 
     /**
-     * Listen to auth state changes
-     * @param {Function} callback - Callback function
      * @returns {Object} Subscription object
      */
     onAuthStateChange(callback) {
