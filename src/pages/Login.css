@@ -179,6 +179,22 @@
     cursor: not-allowed;
 }
 
+.forgot-password-container {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.forgot-password-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.forgot-password-link:hover {
+    color: var(--text-primary);
+}
+
 .auth-footer {
     margin-top: 2rem;
     text-align: center;

@@ -93,6 +93,12 @@ const Login = () => {
                     >
                         {loading ? 'Signing in...' : 'Continue with email'}
                     </button>
+
+                    <div className="forgot-password-container">
+                        <Link to="/forgot-password" className="forgot-password-link">
+                            Forgot password?
+                        </Link>
+                    </div>
                 </form>
 
                 <div className="auth-footer">

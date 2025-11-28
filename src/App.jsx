@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Result from './pages/Result';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -18,7 +20,7 @@ function AppContent() {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   // Hide sidebar and theme toggle on auth pages
-  const isAuthPage = ['/login', '/register'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
 
   return (
     <div className="app-container">
@@ -38,6 +40,8 @@ function AppContent() {
           <Route path="/result" element={<Result />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </main>
     </div>
