@@ -55,7 +55,8 @@ export const AuthProvider = ({ children }) => {
 
             if (user) {
                 console.log('🔐 AuthContext: Loading profile for', user.id);
-                await loadUserProfile(user.id);
+                // Don't await profile load to prevent blocking app init
+                loadUserProfile(user.id);
             }
         } catch (error) {
             console.error('🔐 AuthContext: Error loading user:', error);

@@ -221,11 +221,39 @@ export const authService = {
 
             console.log('🕵️ authService: getUserProfile result', { hasProfile: !!data, error });
 
-            if (error) throw error;
+            if (error) {
+                // If profile not found (PGRST116), try to create it
+                if (error.code === 'PGRST116') {
+                    console.log('👤 authService: Profile missing, creating new profile...');
+                    const { data: user } = await supabase.auth.getUser();
+                    if (user?.user) {
+                        const { error: createError } = await supabase
+                            .from('user_profiles')
+                            .insert({
+                                id: userId,
+                                display_name: user.user.email.split('@')[0],
+                                language_preference: 'auto',
+                            });
+
+                        if (!createError) {
+                            console.log('👤 authService: New profile created successfully');
+                            // Retry fetching
+                            const { data: newProfile } = await supabase
+                                .from('user_profiles')
+                                .select('*')
+                                .eq('id', userId)
+                                .single();
+                            return { profile: newProfile, error: null };
+                        }
+                    }
+                }
+                throw error;
+            }
             return { profile: data, error: null };
         } catch (error) {
             console.error('🕵️ authService: getUserProfile error', error);
-            return { profile: null, error };
+            // Return null profile instead of error to prevent UI issues
+            return { profile: null, error: null };
         }
     },
 
