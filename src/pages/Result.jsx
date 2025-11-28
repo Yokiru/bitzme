@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Home } from 'lucide-react';
@@ -32,6 +32,7 @@ const Result = () => {
 
     const [displayTitle, setDisplayTitle] = useState(query);
     const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+    const hasFetchedRef = useRef(false);
 
     // Dynamic loading messages
     const loadingMessages = [
@@ -54,6 +55,19 @@ const Result = () => {
     }, [loading, loadingMessages.length]);
 
     useEffect(() => {
+        // Skip if query is default/empty
+        if (!query || query === "Learning") {
+            console.log('⏭️ Skipping fetch - invalid query');
+            setLoading(false);
+            return;
+        }
+
+        // Skip if already fetched this query
+        if (hasFetchedRef.current === query) {
+            console.log('⏭️ Skipping fetch - already fetched:', query);
+            return;
+        }
+
         const fetchExplanation = async () => {
             console.log('🔄 Starting fetchExplanation for query:', query);
             setLoading(true);
@@ -85,6 +99,9 @@ const Result = () => {
                     setDisplayTitle(cachedData.query);
                     setLoading(false);
                     console.log('✅ Loading complete (from cache)');
+
+                    // Mark as fetched
+                    hasFetchedRef.current = query;
                     return;
                 }
 
@@ -111,6 +128,9 @@ const Result = () => {
                 await saveToHistory(cleanTitle, explanationCards);
                 console.log('✅ Save complete');
 
+                // Mark as fetched
+                hasFetchedRef.current = query;
+
             } catch (err) {
                 console.error('❌ Error in fetchExplanation:', err);
                 setError(`Error: ${err.message || "Unknown error"}. Check console for details.`);
@@ -122,7 +142,7 @@ const Result = () => {
 
         console.log('🚀 useEffect triggered, calling fetchExplanation');
         fetchExplanation();
-    }, [query, user?.id]);
+    }, [query]);
 
     // Generate quiz questions after cards are loaded and quiz mode is on
     useEffect(() => {
