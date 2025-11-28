@@ -122,7 +122,7 @@ const Result = () => {
 
         console.log('🚀 useEffect triggered, calling fetchExplanation');
         fetchExplanation();
-    }, [query, user]);
+    }, [query, user?.id]);
 
     // Generate quiz questions after cards are loaded and quiz mode is on
     useEffect(() => {
