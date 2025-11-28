@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Sidebar = ({ isOpen, toggle }) => {
     const [history, setHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(true);
     const navigate = useNavigate();
     const { t } = useLanguage();
     const { isAuthenticated, user } = useAuth();
@@ -23,6 +24,7 @@ const Sidebar = ({ isOpen, toggle }) => {
             }
 
             try {
+                setLoadingHistory(true);
                 const { data, error } = await supabase
                     .from('history')
                     .select('*')
@@ -35,6 +37,8 @@ const Sidebar = ({ isOpen, toggle }) => {
             } catch (e) {
                 console.error("Failed to load history", e);
                 setHistory([]);
+            } finally {
+                setLoadingHistory(false);
             }
         };
 
@@ -134,7 +138,12 @@ const Sidebar = ({ isOpen, toggle }) => {
                     <div className="sidebar-divider"></div>
 
                     <div className="sidebar-section-title">{t('nav.recents')}</div>
-                    {history.length === 0 ? (
+                    {loadingHistory ? (
+                        <div className="history-loading">
+                            <div className="loading-spinner-small"></div>
+                            <span>Loading history...</span>
+                        </div>
+                    ) : history.length === 0 ? (
                         <p className="empty-history">{t('nav.no_chats')}</p>
                     ) : (
                         <ul className="history-list">
