@@ -47,6 +47,18 @@ export const AuthProvider = ({ children }) => {
         try {
             console.log('🔐 AuthContext: loadUser started');
             setLoading(true);
+
+            // Load cached profile immediately for instant display
+            const cached = localStorage.getItem('nue_user_profile');
+            if (cached) {
+                try {
+                    setProfile(JSON.parse(cached));
+                    console.log('🔐 AuthContext: Loaded cached profile');
+                } catch (e) {
+                    console.error('Failed to parse cached profile');
+                }
+            }
+
             const { user, session } = await authService.getCurrentUser();
             console.log('🔐 AuthContext: getCurrentUser result', { hasUser: !!user, hasSession: !!session });
 
@@ -57,6 +69,10 @@ export const AuthProvider = ({ children }) => {
                 console.log('🔐 AuthContext: Loading profile for', user.id);
                 // Don't await profile load to prevent blocking app init
                 loadUserProfile(user.id);
+            } else {
+                // Clear cache if no user
+                localStorage.removeItem('nue_user_profile');
+                setProfile(null);
             }
         } catch (error) {
             console.error('🔐 AuthContext: Error loading user:', error);
@@ -68,10 +84,34 @@ export const AuthProvider = ({ children }) => {
 
     const loadUserProfile = async (userId) => {
         try {
-            const { profile } = await authService.getUserProfile(userId);
-            setProfile(profile);
+            const { profile, error } = await authService.getUserProfile(userId);
+            if (profile) {
+                setProfile(profile);
+                // Cache profile to localStorage
+                localStorage.setItem('nue_user_profile', JSON.stringify(profile));
+            } else if (error) {
+                console.error('Error loading profile:', error);
+                // Try to use cached profile if available
+                const cached = localStorage.getItem('nue_user_profile');
+                if (cached) {
+                    try {
+                        setProfile(JSON.parse(cached));
+                    } catch (e) {
+                        console.error('Failed to parse cached profile');
+                    }
+                }
+            }
         } catch (error) {
-            console.error('Error loading profile:', error);
+            console.error('Exception loading profile:', error);
+            // Try to use cached profile
+            const cached = localStorage.getItem('nue_user_profile');
+            if (cached) {
+                try {
+                    setProfile(JSON.parse(cached));
+                } catch (e) {
+                    console.error('Failed to parse cached profile');
+                }
+            }
         }
     };
 
@@ -137,6 +177,9 @@ export const AuthProvider = ({ children }) => {
         setProfile(null);
         setSession(null);
 
+        // Clear cached profile
+        localStorage.removeItem('nue_user_profile');
+
         try {
             // Set a timeout to force logout if Supabase takes too long
             const timeoutPromise = new Promise((resolve) => {
@@ -165,13 +208,23 @@ export const AuthProvider = ({ children }) => {
                 throw new Error('No user logged in');
             }
 
+            // Optimistic update - immediately update UI and cache
+            const updatedProfile = {
+                ...profile,
+                ...updates
+            };
+            setProfile(updatedProfile);
+            localStorage.setItem('nue_user_profile', JSON.stringify(updatedProfile));
+
             const { error } = await authService.updateUserProfile(user.id, updates);
 
             if (error) {
+                // Revert on error
+                await loadUserProfile(user.id);
                 throw error;
             }
 
-            // Reload profile
+            // Reload profile to ensure sync
             await loadUserProfile(user.id);
 
             return { success: true, error: null };

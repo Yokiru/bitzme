@@ -205,9 +205,9 @@ export const authService = {
         try {
             console.log('🕵️ authService: getUserProfile started');
 
-            // Create a timeout promise
+            // Create a timeout promise - reduced to 2s for faster UX
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Profile Load Timeout')), 5000)
+                setTimeout(() => reject(new Error('Profile Load Timeout')), 2000)
             );
 
             const { data, error } = await Promise.race([
@@ -247,13 +247,14 @@ export const authService = {
                         }
                     }
                 }
-                throw error;
+                // Return error instead of throwing to allow graceful handling
+                return { profile: null, error };
             }
             return { profile: data, error: null };
         } catch (error) {
             console.error('🕵️ authService: getUserProfile error', error);
-            // Return null profile instead of error to prevent UI issues
-            return { profile: null, error: null };
+            // Return error for proper handling in AuthContext
+            return { profile: null, error };
         }
     },
 
